@@ -47,17 +47,30 @@ public class Run
 
 		JDBC.resetDatabase();
 		ArrayList<String> tables = JDBC.getTables();
+		for (int i=0;i<tables.size();i++) {
+			System.out.println(tables.get(i));
+		}
 
-		// String createTable =
-		// "CREATE TABLE Test_Schlesiger("
-		// + "FirstInt INT,"
-		// + "SecondInt INT,"
-		// + "FirstString CHAR(10),"
-		// + "SecondString VARCHAR(30),"
-		// + "Doubs DOUBLE(40, 2),"
-		// + "PRIMARY KEY(FirstInt));";
-		//
-		// JDBC.createTable(createTable);
+		//		 String createTable =
+		//		 "CREATE TABLE Test_Schlesiger("
+		//		 + "FirstInt INT,"
+		//		 + "SecondInt INT,"
+		//		 + "FirstString CHAR(10),"
+		//		 + "SecondString VARCHAR(30),"
+		//		 + "Doubs DOUBLE(40, 2),"
+		//		 + "PRIMARY KEY(FirstInt));";
+		//		 String createTable =
+		//		 "CREATE TABLE b (\r\n" + 
+		//		 "    Login            VARCHAR(20)    NOT NULL,\r\n" + 
+		//		 "    Pass            VARCHAR(20)    NOT NULL,\r\n" + 
+		//		 "    Email_Address    VARCHAR(50)    NOT NULL,\r\n" + 
+		//		 "    PRIMARY KEY (Login)\r\n" + 
+		//		 ");\r\n";
+		//		 JDBC.createTable(createTable);
+		//			ArrayList<String> tables = JDBC.getTables();
+		//			for (int i=0;i<tables.size();i++) {
+		//				System.out.println(tables.get(i));
+		//	}
 		// JDBC.createRandomData(500000);
 
 		// Does 100 select statements 20 times alternating between columns.
@@ -107,7 +120,11 @@ public class Run
 		ArrayList<String> tables = getTables();
 		for (int i=0;i<tables.size();i++) {
 			Statement stmt = m_dbConn.createStatement();
+			stmt.execute("SET FOREIGN_KEY_CHECKS=0;");
+			stmt = m_dbConn.createStatement();
 			stmt.execute("DROP TABLE IF EXISTS "+tables.get(i)+" CASCADE");
+			stmt = m_dbConn.createStatement();
+			stmt.execute("SET FOREIGN_KEY_CHECKS=1;");
 		}
 		initializeDatabase();
 	}
@@ -119,7 +136,12 @@ public class Run
 	 */
 	private void initializeDatabase() {
 		String SQLTables = readFile("Create_SQL_Tables.txt");
-		//System.out.println(SQLTables);
+		String[] createTables = SQLTables.split(";");
+		for (int i=0;i<createTables.length;i++) {
+			System.out.println(createTables[i]);
+			createTable(createTables[i]);
+
+		}
 	}
 	/**
 	 * Reads in a full text file and returns a string containing its contents
