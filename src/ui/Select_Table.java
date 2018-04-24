@@ -13,7 +13,7 @@ public class Select_Table {
 
 	private JList<String> tableList;
 	public static final int width = 250;
-	public static final int height = 80;
+	public static final int height = 200;
 
 	/**
 	 * Creates the UI for the given tables

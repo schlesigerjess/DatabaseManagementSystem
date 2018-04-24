@@ -1,7 +1,5 @@
 package run;
-
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
@@ -28,49 +26,22 @@ import ui.Select_Table;
  */
 public class Run
 {
-
-
 	public static final String DB_LOCATION = "jdbc:mysql://db.cs.ship.edu:3306/csc371-08";
 	public static final String LOGIN_NAME = "csc371-08";
 	public static final String PASSWORD = "Password08";
 	protected Connection m_dbConn = null;
 
 
-	// TODO: Create the tables and insert data.
-
+	// TODO: Insert data into the tables.
 
 	public static void main(String args[])  throws Exception {
 		Run JDBC = new Run();
 		JDBC.activateJDBC();
 		JDBC.getConnection();
 
-
+		// Optional, comment if you don't want to recreate DB
 		JDBC.resetDatabase();
-		ArrayList<String> tables = JDBC.getTables();
-		for (int i=0;i<tables.size();i++) {
-			System.out.println(tables.get(i));
-		}
 
-		//		 String createTable =
-		//		 "CREATE TABLE Test_Schlesiger("
-		//		 + "FirstInt INT,"
-		//		 + "SecondInt INT,"
-		//		 + "FirstString CHAR(10),"
-		//		 + "SecondString VARCHAR(30),"
-		//		 + "Doubs DOUBLE(40, 2),"
-		//		 + "PRIMARY KEY(FirstInt));";
-		//		 String createTable =
-		//		 "CREATE TABLE b (\r\n" + 
-		//		 "    Login            VARCHAR(20)    NOT NULL,\r\n" + 
-		//		 "    Pass            VARCHAR(20)    NOT NULL,\r\n" + 
-		//		 "    Email_Address    VARCHAR(50)    NOT NULL,\r\n" + 
-		//		 "    PRIMARY KEY (Login)\r\n" + 
-		//		 ");\r\n";
-		//		 JDBC.createTable(createTable);
-		//			ArrayList<String> tables = JDBC.getTables();
-		//			for (int i=0;i<tables.size();i++) {
-		//				System.out.println(tables.get(i));
-		//	}
 		// JDBC.createRandomData(500000);
 
 		// Does 100 select statements 20 times alternating between columns.
@@ -91,22 +62,20 @@ public class Run
 		//			System.out.println("Start:\t" + startTimeStamp + "\nEnd:\t" + endTimeStamp);
 		//		}
 
-		//String[] tables = JDBC.getTables();
 
+		// Gets current tables
+		ArrayList<String> tables = JDBC.getTables();
+//		for (int i=0;i<tables.size();i++) {
+//			System.out.println(tables.get(i));
+//		}
 
+		SwingUtilities.invokeLater(new Runnable() {
 
-
-		//		String[] tables = {"Table 1", "Table 2", "Table 3", 
-		//				"Table 4", "Table 5", "Table 6", "Table 7", "Table 8", "Table 9", 
-		//				"Table 10", "Table 11", "Table 12"};
-
-		//		SwingUtilities.invokeLater(new Runnable() {
-		//
-		//			@Override
-		//			public void run() {
-		//				new Select_Table(tables);
-		//			}
-		//		});
+			@Override
+			public void run() {
+				new Select_Table(tables.toArray(new String[0]));
+			}
+		});
 	}
 
 	/**
@@ -138,7 +107,7 @@ public class Run
 		String SQLTables = readFile("Create_SQL_Tables.txt");
 		String[] createTables = SQLTables.split(";");
 		for (int i=0;i<createTables.length;i++) {
-			System.out.println(createTables[i]);
+//			System.out.println(createTables[i]);
 			createTable(createTables[i]);
 
 		}
@@ -162,7 +131,6 @@ public class Run
 		return null;
 	}
 
-	// TODO Code needs to be tested; I'm not on campus to try it out.
 	/**
 	 * Grabs all the SQL's tables and creates a string array of them.
 	 * @return array of all the tables
@@ -177,12 +145,8 @@ public class Run
 		while (rs.next()) {
 			tables.add(rs.getString(3));
 		}
-
-
 		return tables;
 	}
-
-
 
 	/**
 	 * Creates a SQL table using the given string
