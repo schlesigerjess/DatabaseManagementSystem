@@ -1,5 +1,9 @@
 package run;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -8,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 import java.sql.ResultSet;
@@ -23,21 +28,25 @@ import ui.Select_Table;
  */
 public class Run
 {
-	
-	
-	public static final String DB_LOCATION = "jdbc:mysql://db.cs.ship.edu:3306/csc371-13";
+
+
+	public static final String DB_LOCATION = "jdbc:mysql://db.cs.ship.edu:3306/csc371-08";
 	public static final String LOGIN_NAME = "csc371-08";
 	public static final String PASSWORD = "Password08";
 	protected Connection m_dbConn = null;
 
 
 	// TODO: Create the tables and insert data.
-	
-	
+
+
 	public static void main(String args[])  throws Exception {
-//		Run JDBC = new Run();
-//		JDBC.activateJDBC();
-//		JDBC.getConnection();
+		Run JDBC = new Run();
+		JDBC.activateJDBC();
+		JDBC.getConnection();
+
+
+		JDBC.resetDatabase();
+		ArrayList<String> tables = JDBC.getTables();
 
 		// String createTable =
 		// "CREATE TABLE Test_Schlesiger("
@@ -52,52 +61,103 @@ public class Run
 		// JDBC.createRandomData(500000);
 
 		// Does 100 select statements 20 times alternating between columns.
-//		for (int j = 0; j < 20; j++) 
-//		{
-//			String column = "";
-//			if (j % 2 == 0) 
-//			{
-//				column = "FirstInt";
-//			} else
-//				column = "SecondInt";
-//			String startTimeStamp = new SimpleDateFormat("mm:ss.sss").format(new Date());
-//			for (int i = 0; i < 100; i++) 
-//			{
-//				JDBC.selectStatements(column);
-//			}
-//			String endTimeStamp = new SimpleDateFormat("mm:ss.sss").format(new Date());
-//			System.out.println("Start:\t" + startTimeStamp + "\nEnd:\t" + endTimeStamp);
-//		}
-		
-		//String[] tables = JDBC.getTables();
-		String[] tables = {"Table 1", "Table 2", "Table 3", 
-				"Table 4", "Table 5", "Table 6", "Table 7", "Table 8", "Table 9", 
-				"Table 10", "Table 11", "Table 12"};
-		
-		SwingUtilities.invokeLater(new Runnable() {
+		//		for (int j = 0; j < 20; j++) 
+		//		{
+		//			String column = "";
+		//			if (j % 2 == 0) 
+		//			{
+		//				column = "FirstInt";
+		//			} else
+		//				column = "SecondInt";
+		//			String startTimeStamp = new SimpleDateFormat("mm:ss.sss").format(new Date());
+		//			for (int i = 0; i < 100; i++) 
+		//			{
+		//				JDBC.selectStatements(column);
+		//			}
+		//			String endTimeStamp = new SimpleDateFormat("mm:ss.sss").format(new Date());
+		//			System.out.println("Start:\t" + startTimeStamp + "\nEnd:\t" + endTimeStamp);
+		//		}
 
-			@Override
-			public void run() {
-				new Select_Table(tables);
-			}
-		});
+		//String[] tables = JDBC.getTables();
+
+
+
+
+		//		String[] tables = {"Table 1", "Table 2", "Table 3", 
+		//				"Table 4", "Table 5", "Table 6", "Table 7", "Table 8", "Table 9", 
+		//				"Table 10", "Table 11", "Table 12"};
+
+		//		SwingUtilities.invokeLater(new Runnable() {
+		//
+		//			@Override
+		//			public void run() {
+		//				new Select_Table(tables);
+		//			}
+		//		});
 	}
-	
-	
+
+	/**
+	 * Resets our database. 
+	 * Deletes all current tables and creates new ones based off our text file.
+	 * Will Initialize one row of data for each table
+	 * @throws Exception if it fails to find the tables or delete the tables
+	 * @author Jessica Schlesiger
+	 */
+	private void resetDatabase() throws Exception {
+		ArrayList<String> tables = getTables();
+		for (int i=0;i<tables.size();i++) {
+			Statement stmt = m_dbConn.createStatement();
+			stmt.execute("DROP TABLE IF EXISTS "+tables.get(i)+" CASCADE");
+		}
+		initializeDatabase();
+	}
+
+	/**
+	 * Reads in our text file for creating tables. 
+	 * Then creates the tables and initializes with data
+	 * @author Jessica Schlesiger
+	 */
+	private void initializeDatabase() {
+		String SQLTables = readFile("Create_SQL_Tables.txt");
+		//System.out.println(SQLTables);
+	}
+	/**
+	 * Reads in a full text file and returns a string containing its contents
+	 * @param path to the desired file
+	 * @return string of path file's contents
+	 * @throws IOException if it fails to read in the file.
+	 * @author Jessica Schlesiger
+	 */
+	static String readFile(String path) {
+		try {
+
+			byte[] encoded = Files.readAllBytes(Paths.get(path));
+			return new String(encoded);
+		}	 catch (IOException e) {
+			System.out.println("Failed to read: "+path);
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	// TODO Code needs to be tested; I'm not on campus to try it out.
 	/**
 	 * Grabs all the SQL's tables and creates a string array of them.
 	 * @return array of all the tables
 	 * @throws Exception failed to get the tables
+	 * @author Jessica Schlesiger
 	 */
-	private String[] getTables() throws Exception{
-	
+	private ArrayList<String> getTables() throws Exception{
+
 		DatabaseMetaData md = m_dbConn.getMetaData();
 		ResultSet rs = md.getTables(null, null, "%", null);
+		ArrayList<String> tables = new ArrayList<String>();
 		while (rs.next()) {
-		  System.out.println(rs.getString(3));
+			tables.add(rs.getString(3));
 		}
-		return null;
+
+
+		return tables;
 	}
 
 
@@ -107,12 +167,12 @@ public class Run
 	 * 
 	 * @param tableString
 	 *            the SQL command to create the table
+	 * @author Jessica Schlesiger
 	 */
 	public void createTable(String tableString) 
 	{
 		try {
 			Statement stmt = m_dbConn.createStatement();
-			stmt.execute("DROP TABLE IF EXISTS Test_Schlesiger CASCADE");
 			stmt = m_dbConn.createStatement();
 			stmt.execute(tableString);
 		} catch (SQLException e) 
@@ -128,6 +188,7 @@ public class Run
 	 * @param rows
 	 *            number of rows we want to create
 	 * @throws SQLException
+	 * @author Jessica Schlesiger
 	 */
 	public void createRandomData(int rows) throws SQLException 
 	{
@@ -163,6 +224,7 @@ public class Run
 	 * To execute an SQL statement that is a SELECT statement.
 	 * @param column the column we want to select from.
 	 * @throws SQLException
+	 * @author Jessica Schlesiger
 	 */
 	public void selectStatements(String column) throws SQLException 
 	{
@@ -179,6 +241,7 @@ public class Run
 	 * @param max
 	 *            the number can be
 	 * @return generated number
+	 * @author Jessica Schlesiger
 	 */
 	public int generateRandomNumber(int min, int max) 
 	{
@@ -194,6 +257,7 @@ public class Run
 	 * @param max
 	 *            the number can be
 	 * @return generated number
+	 * @author Jessica Schlesiger
 	 */
 	public double generateRandomDouble(double min, double max) 
 	{
@@ -210,6 +274,7 @@ public class Run
 	 * @param max
 	 *            the length can be
 	 * @return generated number
+	 * @author Jessica Schlesiger
 	 */
 	public String generateRandomString(int max) 
 	{
@@ -229,6 +294,7 @@ public class Run
 	 * Jar file posted in D2L.
 	 *
 	 * @return Returns true if it successfully sets up the driver.
+	 * @author Given to us for first project
 	 */
 	public boolean activateJDBC() 
 	{
@@ -245,6 +311,7 @@ public class Run
 
 	/**
 	 * Creates a connection to the database that you can then send commands to.
+	 * @author Given to us for first project
 	 */
 	public void getConnection() 
 	{
@@ -258,5 +325,5 @@ public class Run
 	}
 }
 
-	
+
 
