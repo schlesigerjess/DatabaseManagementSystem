@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 
 import javax.swing.SwingUtilities;
 
@@ -32,7 +33,8 @@ public class Run
 	protected Connection m_dbConn = null;
 
 
-	// TODO: Insert data into the tables.
+	// TODO: Insert data into the tables needs bugfixes for foreign key constraints
+	// TODO: Create a select statement method. In progress one is commented out below 
 
 	public static void main(String args[])  throws Exception {
 		Run JDBC = new Run();
@@ -42,40 +44,14 @@ public class Run
 		// Optional, comment if you don't want to recreate DB
 		JDBC.resetDatabase();
 
-		// JDBC.createRandomData(500000);
-
-		// Does 100 select statements 20 times alternating between columns.
-		//		for (int j = 0; j < 20; j++) 
-		//		{
-		//			String column = "";
-		//			if (j % 2 == 0) 
-		//			{
-		//				column = "FirstInt";
-		//			} else
-		//				column = "SecondInt";
-		//			String startTimeStamp = new SimpleDateFormat("mm:ss.sss").format(new Date());
-		//			for (int i = 0; i < 100; i++) 
-		//			{
-		//				JDBC.selectStatements(column);
-		//			}
-		//			String endTimeStamp = new SimpleDateFormat("mm:ss.sss").format(new Date());
-		//			System.out.println("Start:\t" + startTimeStamp + "\nEnd:\t" + endTimeStamp);
+		// Gets current tables
+		ArrayList<String> tables = JDBC.getTables();
+		//		for (int i=0;i<tables.size();i++) {
+		//			System.out.println(tables.get(i));
 		//		}
 
 
-		// Gets current tables
-		ArrayList<String> tables = JDBC.getTables();
-//		for (int i=0;i<tables.size();i++) {
-//			System.out.println(tables.get(i));
-//		}
-
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				new Select_Table(tables.toArray(new String[0]));
-			}
-		});
+		new Select_Table(tables.toArray(new String[0]));
 	}
 
 	/**
@@ -88,12 +64,9 @@ public class Run
 	private void resetDatabase() throws Exception {
 		ArrayList<String> tables = getTables();
 		for (int i=0;i<tables.size();i++) {
-			Statement stmt = m_dbConn.createStatement();
-			stmt.execute("SET FOREIGN_KEY_CHECKS=0;");
-			stmt = m_dbConn.createStatement();
-			stmt.execute("DROP TABLE IF EXISTS "+tables.get(i)+" CASCADE");
-			stmt = m_dbConn.createStatement();
-			stmt.execute("SET FOREIGN_KEY_CHECKS=1;");
+			runSQLCommands("SET FOREIGN_KEY_CHECKS=0;");
+			runSQLCommands("DROP TABLE IF EXISTS "+tables.get(i)+" CASCADE");
+			runSQLCommands("SET FOREIGN_KEY_CHECKS=1;");
 		}
 		initializeDatabase();
 	}
@@ -102,16 +75,50 @@ public class Run
 	 * Reads in our text file for creating tables. 
 	 * Then creates the tables and initializes with data
 	 * @author Jessica Schlesiger
+	 * @throws Exception 
 	 */
-	private void initializeDatabase() {
-		String SQLTables = readFile("Create_SQL_Tables.txt");
-		String[] createTables = SQLTables.split(";");
+	private void initializeDatabase() throws Exception {
+		String[] createTables = readFile("Create_SQL_Tables.txt").split(";");
 		for (int i=0;i<createTables.length;i++) {
-//			System.out.println(createTables[i]);
-			createTable(createTables[i]);
-
+			runSQLCommands(createTables[i]);
 		}
+
+		// TODO: Diagnose SQL foreign key errors
+		String[] insertData = readFile("Insert_Data_SQL.txt").split(";");
+		for (int i=0;i<insertData.length;i++) {
+			runSQLCommands(insertData[i]);
+		}	
 	}
+
+	//	/**
+	//	 * To execute an SQL statement that is a SELECT statement.
+	//	 * @param column the column we want to select from.
+	//	 * @author Jessica Schlesiger
+	//	 * @throws Exception 
+	//	 */
+	//	public void selectStatements(String selectString) throws Exception 
+	//	{
+	
+	//		// Was attempting to create a way to select all table's columns and their valid datatypes
+	//		// Feel free to delete some if not all code here
+	//		Statement stmt = m_dbConn.createStatement();
+	//		ResultSet rs = stmt.executeQuery(selectString);
+	//		ResultSetMetaData md = rs.getMetaData();
+	//		int colCount = md.getColumnCount();  
+	//		int i=3;
+	//		while (rs.next()) {
+	//			System.out.println(rs.getString(i));
+	//			
+	//		}
+	////		for (int i=0; i<=2; i++){  
+	////		//String col_name = md.getColumnName(i);  
+	////		System.out.println(rs.getString(i));  
+	////		}
+	//}
+	//	
+
+
+
 	/**
 	 * Reads in a full text file and returns a string containing its contents
 	 * @param path to the desired file
@@ -146,130 +153,25 @@ public class Run
 			tables.add(rs.getString(3));
 		}
 		return tables;
-	}
+	}	
 
 	/**
-	 * Creates a SQL table using the given string
-	 * 
-	 * @param tableString
-	 *            the SQL command to create the table
+	 * Executes a SQL command using the given string
+	 * Does not work for select statements
+	 * @param command the SQL command
 	 * @author Jessica Schlesiger
 	 */
-	public void createTable(String tableString) 
+	public void runSQLCommands(String command) 
 	{
 		try {
 			Statement stmt = m_dbConn.createStatement();
 			stmt = m_dbConn.createStatement();
-			stmt.execute(tableString);
+			stmt.execute(command);
 		} catch (SQLException e) 
 		{
-			System.out.println("An error has occured on Table Creation.");
+			System.out.println("An error has occured when running: "+command);
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * Fills our table with random data
-	 * 
-	 * @param rows
-	 *            number of rows we want to create
-	 * @throws SQLException
-	 * @author Jessica Schlesiger
-	 */
-	public void createRandomData(int rows) throws SQLException 
-	{
-		PreparedStatement stmt = m_dbConn.prepareStatement("INSERT INTO Test_Schlesiger "
-				+ "(FirstInt, SecondInt, FirstString, SecondString, Doubs) " + "VALUES(?,?,?,?,?)");
-
-		String startTimeStamp = new SimpleDateFormat("mm:ss").format(new Date());
-
-		// Adds each value to the row.
-		for (int i = 0; i < rows; i++) 
-		{
-			stmt.setInt(1, i + 1);
-			stmt.setInt(2, i + 1);
-			stmt.setString(3, generateRandomString(10));
-			stmt.setString(4, generateRandomString(generateRandomNumber(0, 30)));
-			stmt.setDouble(5, generateRandomDouble(0, 200));
-			// Add row to the batch.
-			stmt.addBatch();
-		}
-		try {
-			// Batch is ready, execute it to insert the data
-			stmt.executeBatch();
-		} catch (SQLException e) 
-		{
-			System.out.println("Error message: " + e.getMessage());
-		}
-
-		String endTimeStamp = new SimpleDateFormat("mm:ss").format(new Date());
-		System.out.println("Start:\t" + startTimeStamp + "\nEnd:\t" + endTimeStamp);
-	}
-
-	/**
-	 * To execute an SQL statement that is a SELECT statement.
-	 * @param column the column we want to select from.
-	 * @throws SQLException
-	 * @author Jessica Schlesiger
-	 */
-	public void selectStatements(String column) throws SQLException 
-	{
-		String selectData = new String("SELECT * FROM Test_Schlesiger WHERE " + column + "='1';");
-		Statement stmt = m_dbConn.createStatement();
-		stmt.executeQuery(selectData);
-	}
-
-	/**
-	 * Generates a random number between and including min and max
-	 * 
-	 * @param min
-	 *            the number can be
-	 * @param max
-	 *            the number can be
-	 * @return generated number
-	 * @author Jessica Schlesiger
-	 */
-	public int generateRandomNumber(int min, int max) 
-	{
-		Random random = new Random();
-		return random.nextInt(max - min + 1) + min;
-	}
-
-	/**
-	 * Generates a random double between and including min and max
-	 * 
-	 * @param min
-	 *            the number can be
-	 * @param max
-	 *            the number can be
-	 * @return generated number
-	 * @author Jessica Schlesiger
-	 */
-	public double generateRandomDouble(double min, double max) 
-	{
-		Random r = new Random();
-		double randomValue = min + (max - min) * r.nextDouble();
-		return randomValue;
-	}
-
-	/**
-	 * Generates a random String of length between and including min and max
-	 * 
-	 * @param min
-	 *            the length can be
-	 * @param max
-	 *            the length can be
-	 * @return generated number
-	 * @author Jessica Schlesiger
-	 */
-	public String generateRandomString(int max) 
-	{
-		final String AB = "abcdefghijklmnopqrstuvwxyz";
-		SecureRandom rnd = new SecureRandom();
-		StringBuilder sb = new StringBuilder(max);
-		for (int i = 0; i < max; i++)
-			sb.append(AB.charAt(rnd.nextInt(AB.length())));
-		return sb.toString();
 	}
 
 	/**
@@ -310,6 +212,3 @@ public class Run
 		}
 	}
 }
-
-
-

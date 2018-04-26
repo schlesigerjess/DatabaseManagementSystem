@@ -1,0 +1,56 @@
+INSERT INTO Moderator 
+	VALUES ('Moderator1', 'PaSSworD', 'MyMail@Gmail.com');
+
+INSERT INTO Manager
+	VALUES ('Manager1', 'Password', 'Something@gmail.com', 'Command1', 'Command2');
+
+INSERT INTO Created_By
+	VALUES ('Manager1', 'Moderator1');
+
+INSERT INTO Deleted_By
+	VALUES ('Manager1', 'Moderator1');
+
+INSERT INTO Player
+	VALUES ('CoolUsername', 'WordPass', 'Emailing@gmail.com', NULL);
+
+INSERT INTO Location
+	VALUES (0, 'Iceland', 20, 'Greenland', NULL, 1);
+
+INSERT INTO Stat
+	VALUES (0, 10, 4, 10, 10, 'BeepBoop', NULL);
+
+INSERT INTO Player_Character
+	VALUES ('BeepBoop', 10, 'CoolUsername', 0, 0, NULL);
+
+INSERT INTO Ability
+	VALUES (1, 2, 4, 1, 10, 4, 4, 10, 'Burn');
+
+INSERT INTO Creature
+	VALUES (0, 2, 0, 0, 1);
+
+INSERT INTO Liked_Creatures
+	VALUES (0, 1);
+
+INSERT INTO Hated_Creatures
+	VALUES (1, 2);
+
+INSERT INTO Liked_Characters
+	VALUES (0, 'BeepBoop');
+
+INSERT INTO Hated_Characters
+	VALUES (0, 'AnotherCharacter');
+
+INSERT INTO Equipment
+	VALUES (0, NULL, NULL, NULL);
+
+INSERT INTO Armor
+	VALUES (0, 4, 0);
+
+INSERT INTO Weapon
+	VALUES (1, NULL, NULL, 1);
+
+INSERT INTO Containers
+	VALUES (10, 20, 3, 2);
+
+INSERT INTO Can_Contain
+	VALUES (0, 2);
