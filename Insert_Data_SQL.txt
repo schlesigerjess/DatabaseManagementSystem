@@ -23,7 +23,7 @@ INSERT INTO Player_Character
 	VALUES ('BeepBoop', 10, 'CoolUsername', 0, 0, NULL);
 
 INSERT INTO Ability
-	VALUES (1, 2, 4, 1, 10, 4, 4, 10, 'Burn');
+	VALUES (1, 2, 4, 1, 10, 'Burn');
 
 INSERT INTO Creature
 	VALUES (0, 2, 0, 0, 1);

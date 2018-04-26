@@ -54,6 +54,11 @@ CREATE TABLE Location(
     Location_ID        INT            NOT NULL,
     PRIMARY KEY (ID)
 );
+ALTER TABLE Location
+    ADD FOREIGN KEY (Location_ID) 
+    	REFERENCES Location(ID)
+    	ON DELETE CASCADE
+    	ON UPDATE CASCADE;
 CREATE TABLE Stat(
     ID                INT            NOT NULL,
     Stamina            INT            NOT NULL,
@@ -70,7 +75,7 @@ CREATE TABLE Player_Character(
     Player_Login        VARCHAR(20)    NOT NULL,
     Location_ID        INT            NOT NULL,
     Stats_ID            INT            NOT NULL,
-    State                VARCHAR(20)    NOT NULL,
+    State                VARCHAR(20),
     PRIMARY KEY (Name),
     FOREIGN KEY (Player_Login) 
     	REFERENCES Player(Login)

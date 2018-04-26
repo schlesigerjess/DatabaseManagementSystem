@@ -2,26 +2,19 @@ package run;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Random;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-
-import javax.swing.SwingUtilities;
-
 import ui.Select_Table;
 /**
  * Runs the DBMS UI.
- * 
+ * Note:
+ *  When inserting data, we set a flag to ignore foreign key constraints. 
+ * 	Handling circular dependencies is not in the scope of this project.
  * @author Jessica Schlesiger, Jonathan, Kim
  *
  */
@@ -33,9 +26,13 @@ public class Run
 	protected Connection m_dbConn = null;
 
 
-	// TODO: Insert data into the tables needs bugfixes for foreign key constraints
 	// TODO: Create a select statement method. In progress one is commented out below 
-
+	
+	/**
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String args[])  throws Exception {
 		Run JDBC = new Run();
 		JDBC.activateJDBC();
@@ -83,7 +80,7 @@ public class Run
 			runSQLCommands(createTables[i]);
 		}
 
-		// TODO: Diagnose SQL foreign key errors
+		runSQLCommands("SET FOREIGN_KEY_CHECKS=0;");
 		String[] insertData = readFile("Insert_Data_SQL.txt").split(";");
 		for (int i=0;i<insertData.length;i++) {
 			runSQLCommands(insertData[i]);
@@ -116,8 +113,6 @@ public class Run
 	////		}
 	//}
 	//	
-
-
 
 	/**
 	 * Reads in a full text file and returns a string containing its contents
