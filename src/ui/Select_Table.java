@@ -1,6 +1,5 @@
 package ui;
 import java.awt.Dimension;
-
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -52,7 +51,10 @@ public class Select_Table {
 		* See what I mean by clicking and holding on a table name, then releasing the click. 
 		* It prints out once for each action.
 		*/
+		
+		new Entry_List(tableList.getSelectedValue());
 		System.out.println(tableList.getSelectedValue());
+
 //		String s = (String) tableList.getSelectedValue();
 //		if (s.equals("TABLE NAME")) {
 //		}
